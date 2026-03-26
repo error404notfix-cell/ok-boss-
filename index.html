@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CYBER.DL | Universal Media Downloader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-purple: #9d00ff;
+            --dark-bg: #050505;
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--dark-bg);
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .font-cyber {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Animated Grid Background */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            background-size: 60px 60px;
+            background-image: 
+                linear-gradient(to right, rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .glass-input {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .glass-input:focus {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+            outline: none;
+        }
+
+        /* Neon Button */
+        .neon-btn {
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.1), rgba(157, 0, 255, 0.1));
+            border: 1px solid rgba(0, 243, 255, 0.4);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .neon-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent, rgba(0, 243, 255, 0.2), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        .neon-btn:hover::before, .neon-btn:active::before {
+            transform: translateX(100%);
+        }
+
+        .neon-btn:active {
+            transform: scale(0.98);
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.4);
+        }
+
+        /* Platform Colors */
+        .platform-instagram { --platform-color: #E4405F; }
+        .platform-tiktok { --platform-color: #00f2ea; }
+        .platform-youtube { --platform-color: #FF0000; }
+        .platform-facebook { --platform-color: #1877F2; }
+        .platform-twitter { --platform-color: #1DA1F2; }
+        .platform-linkedin { --platform-color: #0A66C2; }
+        .platform-pinterest { --platform-color: #BD081C; }
+
+        .platform-icon {
+            filter: drop-shadow(0 0 10px var(--platform-color));
+        }
+
+        /* Swipeable Cards */
+        .swipe-card {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .swipe-card.swiping-left {
+            transform: translateX(-100%) rotate(-5deg);
+            opacity: 0;
+        }
+
+        .swipe-card.swiping-right {
+            transform: translateX(100%) rotate(5deg);
+            opacity: 0;
+        }
+
+        /* Quality Selector */
+        .quality-option {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s;
+        }
+
+        .quality-option.selected {
+            border-color: var(--neon-cyan);
+            background: rgba(0, 243, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+        }
+
+        /* Loading Animation */
+        .cyber-loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 243, 255, 0.1);
+            border-top-color: var(--neon-cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            position: relative;
+        }
+
+        .cyber-loader::after {
+            content: '';
+            position: absolute;
+            inset: -5px;
+            border: 3px solid transparent;
+            border-top-color: var(--neon-pink);
+            border-radius: 50%;
+            animation: spin 2s linear infinite reverse;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Progress Bar */
+        .progress-fill {
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
+            box-shadow: 0 0 10px var(--neon-cyan);
+            transition: width 0.3s ease;
+        }
+
+        /* Toast */
+        .toast {
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--neon-cyan);
+            border-radius: 3px;
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 640px) {
+            .mobile-pb {
+                padding-bottom: 100px;
+            }
+            .touch-large {
+                min-height: 56px;
+            }
+        }
+
+        /* Glitch Effect */
+        .glitch-text {
+            position: relative;
+            animation: glitch-skew 3s infinite;
+        }
+
+        @keyframes glitch-skew {
+            0%, 100% { transform: skew(0deg); }
+            20% { transform: skew(-2deg); }
+            40% { transform: skew(2deg); }
+            60% { transform: skew(-1deg); }
+            80% { transform: skew(1deg); }
+        }
+
+        /* Batch Item */
+        .batch-item {
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Preview Image */
+        .preview-img {
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+        .preview-container:hover .preview-img {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <!-- Background -->
+    <div class="bg-grid"></div>
+    
+    <!-- Particles Canvas -->
+    <canvas id="particles" class="fixed inset-0 pointer-events-none z-0"></canvas>
+
+    <!-- Main Container -->
+    <div class="relative z-10 max-w-md mx-auto min-h-screen flex flex-col mobile-pb">
+        
+        <!-- Header -->
+        <header class="p-6 text-center relative">
+            <div class="absolute top-4 right-4">
+                <button onclick="toggleTheme()" class="w-10 h-10 rounded-full glass-panel flex items-center justify-center text-cyan-400">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+            <h1 class="font-cyber text-4xl font-black glitch-text mb-1 bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                CYBER.DL
+            </h1>
+            <p class="text-xs text-gray-500 tracking-[0.4em] uppercase">Universal Media Extractor</p>
+        </header>
+
+        <!-- Platform Icons -->
+        <div class="px-4 mb-6">
+            <div class="glass-panel rounded-2xl p-4 flex justify-around items-center overflow-x-auto">
+                <div class="platform-icon platform-instagram flex flex-col items-center gap-1 min-w-[60px]">
+                    <i class="fab fa-instagram text-2xl text-[#E4405F]"></i>
+                    <span class="text-[10px] text-gray-400">IG</span>
+                </div>
+                <div class="platform-icon platform-tiktok flex flex-col items-center gap-1 min-w-[60px]">
+                    <i class="fab fa-tiktok text-2xl text-[#00f2ea]"></i>
+                    <span class="text-[10px] text-gray-400">TT</span>
+                </div>
+                <div class="platform-icon platform-youtube flex flex-col items-center gap-1 min-w-[60px]">
+                    <i class="fab fa-youtube text-2xl text-[#FF0000]"></i>
+                    <span class="text-[10px] text-gray-400">YT</span>
+                </div>
+                <div class="platform-icon platform-facebook flex flex-col items-center gap-1 min-w-[60px]">
+                    <i class="fab fa-facebook text-2xl text-[#1877F2]"></i>
+                    <span class="text-[10px] text-gray-400">FB</span>
+                </div>
+                <div class="platform-icon platform-twitter flex flex-col items-center gap-1 min-w-[60px]">
+                    <i class="fab fa-twitter text-2xl text-[#1DA1F2]"></i>
+                    <span class="text-[10px] text-gray-400">X</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Section -->
+        <div class="px-4 mb-6">
+            <div class="glass-panel rounded-2xl p-1">
+                <div class="bg-black/40 rounded-xl p-4">
+                    <!-- URL Input -->
+                    <div class="relative mb-4">
+                        <textarea 
+                            id="urlInput" 
+                            placeholder="Paste URL here..." 
+                            class="glass-input w-full rounded-xl p-4 pr-12 text-white placeholder-gray-600 resize-none touch-large"
+                            rows="3"
+                            oninput="detectPlatform()"
+                            onpaste="handlePaste(event)"
+                        ></textarea>
+                        <button onclick="clearInput()" class="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <!-- Detected Platform Badge -->
+                    <div id="platformBadge" class="hidden mb-4 flex items-center gap-2 text-sm">
+                        <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                        <span id="platformName" class="text-cyan-400 font-bold uppercase tracking-wider"></span>
+                        <span class="text-gray-500 text-xs">detected</span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="fetchMedia()" id="fetchBtn" class="neon-btn rounded-xl py-4 font-cyber font-bold text-cyan-400 touch-large flex items-center justify-center gap-2">
+                            <i class="fas fa-bolt"></i>
+                            <span>FETCH</span>
+                        </button>
+                        <button onclick="addToBatch()" class="glass-panel border border-purple-500/30 rounded-xl py-4 font-cyber font-bold text-purple-400 touch-large flex items-center justify-center gap-2 hover:bg-purple-500/10 transition-colors">
+                            <i class="fas fa-plus"></i>
+                            <span>BATCH</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Batch List (Collapsible) -->
+        <div id="batchSection" class="px-4 mb-6 hidden">
+            <div class="glass-panel rounded-2xl p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-cyber text-sm text-purple-400">BATCH QUEUE</h3>
+                    <span id="batchCount" class="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded">0</span>
+                </div>
+                <div id="batchList" class="space-y-2 max-h-40 overflow-y-auto mb-3">
+                    <!-- Batch items inserted here -->
+                </div>
+                <button onclick="processBatch()" class="w-full neon-btn rounded-xl py-3 font-bold text-cyan-400 text-sm">
+                    DOWNLOAD ALL
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="hidden px-4 mb-6">
+            <div class="glass-panel rounded-2xl p-8 text-center">
+                <div class="cyber-loader mx-auto mb-4"></div>
+                <p class="text-cyan-400 font-cyber text-sm animate-pulse">EXTRACTING MEDIA...</p>
+                <p id="loadingStatus" class="text-gray-500 text-xs mt-2">Connecting to API</p>
+                
+                <!-- Progress Bar -->
+                <div class="mt-4 h-1 bg-gray-800 rounded-full overflow-hidden">
+                    <div id="loadingProgress" class="progress-fill h-full w-0"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div id="previewSection" class="hidden px-4 mb-6 flex-1">
+            <div class="glass-panel rounded-2xl overflow-hidden swipe-card" id="previewCard">
+                <!-- Thumbnail -->
+                <div class="preview-container relative aspect-video bg-black overflow-hidden">
+                    <img id="previewThumb" src="" alt="Preview" class="preview-img w-full h-full">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    
+                    <!-- Play Button for Video -->
+                    <button id="playBtn" class="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/40">
+                        <div class="w-16 h-16 rounded-full bg-cyan-400/20 backdrop-blur flex items-center justify-center border border-cyan-400/50">
+                            <i class="fas fa-play text-cyan-400 text-2xl ml-1"></i>
+                        </div>
+                    </button>
+
+                    <!-- Duration Badge -->
+                    <div id="durationBadge" class="absolute bottom-3 right-3 bg-black/80 px-2 py-1 rounded text-xs font-mono text-white hidden">
+                        00:00
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="p-4">
+                    <h2 id="previewTitle" class="font-bold text-lg mb-1 line-clamp-2 text-white"></h2>
+                    <p id="previewAuthor" class="text-cyan-400 text-sm mb-4 flex items-center gap-2">
+                        <i class="fas fa-user-circle"></i>
+                        <span></span>
+                    </p>
+
+                    <!-- Quality Selector -->
+                    <div class="mb-4">
+                        <p class="text-xs text-gray-500 uppercase tracking-wider mb-2">Select Quality</p>
+                        <div id="qualityOptions" class="flex gap-2 overflow-x-auto pb-2">
+                            <!-- Quality options inserted here -->
+                        </div>
+                    </div>
+
+                    <!-- Download Button -->
+                    <button onclick="downloadMedia()" class="w-full neon-btn rounded-xl py-4 font-cyber font-bold text-lg text-cyan-400 touch-large flex items-center justify-center gap-3 mb-3">
+                        <i class="fas fa-download"></i>
+                        <span>DOWNLOAD</span>
+                    </button>
+
+                    <!-- Share Button -->
+                    <button onclick="shareMedia()" class="w-full glass-panel border border-gray-700 rounded-xl py-3 text-gray-400 text-sm flex items-center justify-center gap-2 hover:border-cyan-400/50 hover:text-cyan-400 transition-colors">
+                        <i class="fas fa-share-alt"></i>
+                        <span>SHARE</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div id="historySection" class="px-4 mb-6">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-cyber text-sm text-gray-400">RECENT DOWNLOADS</h3>
+                <button onclick="clearHistory()" class="text-xs text-red-400 hover:text-red-300">CLEAR</button>
+            </div>
+            <div id="historyList" class="space-y-3">
+                <!-- History items inserted here -->
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="fixed bottom-0 left-0 right-0 glass-panel border-t border-cyan-900/30 px-6 py-4 z-50">
+            <div class="max-w-md mx-auto flex justify-around items-center">
+                <button onclick="showTab('download')" class="flex flex-col items-center gap-1 text-cyan-400">
+                    <i class="fas fa-home text-xl"></i>
+                    <span class="text-[10px]">Download</span>
+                </button>
+                <button onclick="showTab('batch')" class="flex flex-col items-center gap-1 text-gray-500 hover:text-cyan-400 transition-colors relative">
+                    <i class="fas fa-layer-group text-xl"></i>
+                    <span class="text-[10px]">Batch</span>
+                    <span id="navBatchBadge" class="absolute -top-1 -right-2 w-4 h-4 bg-purple-500 rounded-full text-[8px] flex items-center justify-center hidden">0</span>
+                </button>
+                <button onclick="showTab('history')" class="flex flex-col items-center gap-1 text-gray-500 hover:text-cyan-400 transition-colors">
+                    <i class="fas fa-history text-xl"></i>
+                    <span class="text-[10px]">History</span>
+                </button>
+                <button onclick="showSettings()" class="flex flex-col items-center gap-1 text-gray-500 hover:text-cyan-400 transition-colors">
+                    <i class="fas fa-cog text-xl"></i>
+                    <span class="text-[10px]">Settings</span>
+                </button>
+            </div>
+        </nav>
+
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast fixed bottom-24 left-1/2 -translate-x-1/2 glass-panel border border-cyan-400/50 px-6 py-3 rounded-full z-50 flex items-center gap-3">
+        <i id="toastIcon" class="fas fa-check-circle text-cyan-400"></i>
+        <span id="toastMsg" class="text-sm font-medium text-white">Success</span>
+    </div>
+
+    <script>
+        // State Management
+        let currentMedia = null;
+        let batchQueue = [];
+        let downloadHistory = JSON.parse(localStorage.getItem('cyberDlHistory')) || [];
+        let selectedQuality = null;
+
+        // Platform Detection Patterns
+        const platforms = {
+            instagram: {
+                pattern: /instagram\.com|instagr\.am/i,
+                name: 'Instagram',
+                icon: 'fab fa-instagram',
+                color: '#E4405F'
+            },
+            tiktok: {
+                pattern: /tiktok\.com|vm\.tiktok\.com/i,
+                name: 'TikTok',
+                icon: 'fab fa-tiktok',
+                color: '#00f2ea'
+            },
+            youtube: {
+                pattern: /youtube\.com|youtu\.be|youtube\.com\/shorts/i,
+                name: 'YouTube',
+                icon: 'fab fa-youtube',
+                color: '#FF0000'
+            },
+            facebook: {
+                pattern: /facebook\.com|fb\.watch/i,
+                name: 'Facebook',
+                icon: 'fab fa-facebook',
+                color: '#1877F2'
+            },
+            twitter: {
+                pattern: /twitter\.com|x\.com|t\.co/i,
+                name: 'Twitter/X',
+                icon: 'fab fa-twitter',
+                color: '#1DA1F2'
+            },
+            linkedin: {
+                pattern: /linkedin\.com/i,
+                name: 'LinkedIn',
+                icon: 'fab fa-linkedin',
+                color: '#0A66C2'
+            },
+            pinterest: {
+                pattern: /pinterest\.com|pin\.it/i,
+                name: 'Pinterest',
+                icon: 'fab fa-pinterest',
+                color: '#BD081C'
+            }
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderHistory();
+            initParticles();
+            setupSwipeGestures();
+        });
+
+        // Platform Detection
+        function detectPlatform() {
+            const url = document.getElementById('urlInput').value.trim();
+            const badge = document.getElementById('platformBadge');
+            const nameEl = document.getElementById('platformName');
+            
+            if (!url) {
+                badge.classList.add('hidden');
+                return;
+            }
+
+            for (let [key, platform] of Object.entries(platforms)) {
+                if (platform.pattern.test(url)) {
+                    badge.classList.remove('hidden');
+                    nameEl.textContent = platform.name;
+                    nameEl.style.color = platform.color;
+                    return;
+                }
+            }
+            
+            badge.classList.add('hidden');
+        }
+
+        function handlePaste(e) {
+            setTimeout(detectPlatform, 100);
+        }
+
+        // Fetch Media (Simulated with realistic mock data)
+        async function fetchMedia() {
+            const url = document.getElementById('urlInput').value.trim();
+            
+            if (!url) {
+                showToast('Please enter a URL', 'error');
+                return;
+            }
+
+            let platform = 'unknown';
+            for (let [key, p] of Object.entries(platforms)) {
+                if (p.pattern.test(url)) {
+                    platform = key;
+                    break;
+                }
+            }
+
+            if (platform === 'unknown') {
+                showToast('Unsupported platform', 'error');
+                return;
+            }
+
+            // Show Loading
+            document.getElementById('loadingState').classList.remove('hidden');
+            document.getElementById('previewSection').classList.add('hidden');
+            
+            // Simulate API Progress
+            const progress = document.getElementById('loadingProgress');
+            const status = document.getElementById('loadingStatus');
+            
+            const stages = [
+                { pct: 20, text: 'Resolving URL...' },
+                { pct: 40, text: 'Fetching metadata...' },
+                { pct: 60, text: 'Extracting media...' },
+                { pct: 80, text: 'Processing formats...' },
+                { pct: 100, text: 'Complete!' }
+            ];
+
+            for (let stage of stages) {
+                await new Promise(r => setTimeout(r, 400));
+                progress.style.width = stage.pct + '%';
+                status.textContent = stage.text;
+            }
+
+            await new Promise(r => setTimeout(r, 300));
+
+            // Generate Mock Data based on platform
+            currentMedia = generateMockData(platform, url);
+            
+            displayPreview(currentMedia);
+            
+            document.getElementById('loadingState').classList.add('hidden');
+            document.getElementById('previewSection').classList.remove('hidden');
+            
+            showToast('Media fetched successfully!');
+        }
+
+        function generateMockData(platform, url) {
+            const mockData = {
+                instagram: {
+                    title: 'Instagram Reel by @creator',
+                    author: '@creative_user',
+                    thumb: 'https://picsum.photos/400/700?random=' + Date.now(),
+                    duration: '0:45',
+                    qualities: [
+                        { label: 'HD', value: '1080p', size: '12 MB' },
+                        { label: 'SD', value: '720p', size: '6 MB' },
+                        { label: 'Audio', value: 'mp3', size: '2 MB' }
+                    ]
+                },
+                tiktok: {
+                    title: 'Trending TikTok Video',
+                    author: '@tiktok_star',
+                    thumb: 'https://picsum.photos/400/700?random=' + (Date.now() + 1),
+                    duration: '0:32',
+                    qualities: [
+                        { label: 'No WM', value: 'hd', size: '8 MB' },
+                        { label: 'HD', value: '1080p', size: '10 MB' },
+                        { label: 'Music', value: 'audio', size: '3 MB' }
+                    ]
+                },
+                youtube: {
+                    title: 'Amazing YouTube Video Title That Is Quite Long',
+                    author: 'YouTube Channel',
+                    thumb: 'https://picsum.photos/640/360?random=' + (Date.now() + 2),
+                    duration: '10:24',
+                    qualities: [
+                        { label: '4K', value: '2160p', size: '450 MB' },
+                        { label: '1080p', value: '1080p', size: '120 MB' },
+                        { label: '720p', value: '720p', size: '65 MB' },
+                        { label: 'MP3', value: 'audio', size: '8 MB' }
+                    ]
+                },
+                facebook: {
+                    title: 'Facebook Video',
+                    author: 'Facebook User',
+                    thumb: 'https://picsum.photos/640/360?random=' + (Date.now() + 3),
+                    duration: '2:15',
+                    qualities: [
+                        { label: 'HD', value: '1080p', size: '45 MB' },
+                        { label: 'SD', value: '720p', size: '25 MB' }
+                    ]
+                },
+                twitter: {
+                    title: 'Twitter/X Video Tweet',
+                    author: '@twitteruser',
+                    thumb: 'https://picsum.photos/640/360?random=' + (Date.now() + 4),
+                    duration: '1:30',
+                    qualities: [
+                        { label: 'HD', value: '1080p', size: '35 MB' },
+                        { label: 'SD', value: '720p', size: '18 MB' }
+                    ]
+                },
+                linkedin: {
+                    title: 'LinkedIn Professional Video',
+                    author: 'LinkedIn User',
+                    thumb: 'https://picsum.photos/640/360?random=' + (Date.now() + 5),
+                    duration: '5:00',
+                    qualities: [
+                        { label: '1080p', value: '1080p', size: '85 MB' },
+                        { label: '720p', value: '720p', size: '45 MB' }
+                    ]
+                },
+                pinterest: {
+                    title: 'Pinterest Pin Image/Video',
+                    author: 'Pinner Name',
+                    thumb: 'https://picsum.photos/400/600?random=' + (Date.now() + 6),
+                    duration: null,
+                    qualities: [
+                        { label: 'Original', value: 'orig', size: '5 MB' },
+                        { label: 'HD', value: 'hd', size: '2 MB' }
+                    ]
+                }
+            };
+
+            return {
+                ...mockData[platform],
+                platform,
+                url,
+                id: Date.now(),
+                downloadedAt: new Date().toISOString()
+            };
+        }
+
+        function displayPreview(media) {
+            document.getElementById('previewThumb').src = media.thumb;
+            document.getElementById('previewTitle').textContent = media.title;
+            document.getElementById('previewAuthor').querySelector('span').textContent = media.author;
+            
+            const durationBadge = document.getElementById('durationBadge');
+            if (media.duration) {
+                durationBadge.textContent = media.duration;
+                durationBadge.classList.remove('hidden');
+            } else {
+                durationBadge.classList.add('hidden');
+            }
+
+            // Quality Options
+            const qualityContainer = document.getElementById('qualityOptions');
+            qualityContainer.innerHTML = '';
+            
+            media.qualities.forEach((q, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `quality-option flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium ${idx === 0 ? 'selected' : ''}`;
+                btn.innerHTML = `
+                    <div class="text-white">${q.label}</div>
+                    <div class="text-xs text-gray-500">${q.size}</div>
+                `;
+                btn.onclick = () => selectQuality(idx, q);
+                qualityContainer.appendChild(btn);
+            });
+            
+            selectedQuality = media.qualities[0];
+        }
+
+        function selectQuality(idx, quality) {
+            document.querySelectorAll('.quality-option').forEach((el, i) => {
+                el.classList.toggle('selected', i === idx);
+            });
+            selectedQuality = quality;
+        }
+
+        // Download Functions
+        function downloadMedia() {
+            if (!currentMedia) return;
+            
+            // Simulate download
+            showToast(`Downloading ${selectedQuality.label}...`);
+            
+            setTimeout(() => {
+                addToHistory(currentMedia);
+                showToast('Download complete! Saved to device.');
+            }, 1500);
+        }
+
+        function addToBatch() {
+            const url = document.getElementById('urlInput').value.trim();
+            if (!url) {
+                showToast('Enter a URL first', 'error');
+                return;
+            }
+            
+            let platform = 'unknown';
+            for (let [key, p] of Object.entries(platforms)) {
+                if (p.pattern.test(url)) {
+                    platform = key;
+                    break;
+                }
+            }
+            
+            batchQueue.push({ url, platform, id: Date.now() });
+            updateBatchUI();
+            showToast('Added to batch queue');
+            document.getElementById('urlInput').value = '';
+            document.getElementById('platformBadge').classList.add('hidden');
+        }
+
+        function updateBatchUI() {
+            const section = document.getElementById('batchSection');
+            const list = document.getElementById('batchList');
+            const count = document.getElementById('batchCount');
+            const navBadge = document.getElementById('navBatchBadge');
+            
+            if (batchQueue.length === 0) {
+                section.classList.add('hidden');
+                navBadge.classList.add('hidden');
+            } else {
+                section.classList.remove('hidden');
+                count.textContent = batchQueue.length;
+                navBadge.textContent = batchQueue.length;
+                navBadge.classList.remove('hidden');
+            }
+            
+            list.innerHTML = batchQueue.map((item, idx) => `
+                <div class="batch-item flex items-center justify-between bg-black/30 p-3 rounded-lg border border-gray-800">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <i class="${platforms[item.platform]?.icon || 'fas fa-link'} text-gray-400"></i>
+                        <span class="text-sm text-gray-300 truncate">${item.url.substring(0, 30)}...</span>
+                    </div>
+                    <button onclick="removeFromBatch(${idx})" class="text-red-400 hover:text-red-300 px-2">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function removeFromBatch(idx) {
+            batchQueue.splice(idx, 1);
+            updateBatchUI();
+        }
+
+        async function processBatch() {
+            if (batchQueue.length === 0) return;
+            
+            showToast(`Processing ${batchQueue.length} items...`);
+            
+            for (let item of batchQueue) {
+                await new Promise(r => setTimeout(r, 1000));
+                const media = generateMockData(item.platform, item.url);
+                addToHistory(media);
+            }
+            
+            batchQueue = [];
+            updateBatchUI();
+            showToast('Batch download complete!');
+        }
+
+        // History Management
+        function addToHistory(media) {
+            downloadHistory.unshift(media);
+            if (downloadHistory.length > 50) downloadHistory = downloadHistory.slice(0, 50);
+            localStorage.setItem('cyberDlHistory', JSON.stringify(downloadHistory));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            
+            if (downloadHistory.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-8 text-gray-600">
+                        <i class="fas fa-download text-3xl mb-2 opacity-30"></i>
+                        <p class="text-sm">No downloads yet</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = downloadHistory.map(item => `
+                <div class="glass-panel rounded-xl p-3 flex gap-3 items-center group">
+                    <img src="${item.thumb}" class="w-16 h-16 rounded-lg object-cover bg-gray-800">
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-sm font-medium text-white truncate">${item.title}</h4>
+                        <p class="text-xs text-gray-500">${item.author} • ${new Date(item.downloadedAt).toLocaleDateString()}</p>
+                    </div>
+                    <button onclick="shareHistoryItem('${item.url}')" class="w-10 h-10 rounded-full bg-cyan-400/10 flex items-center justify-center text-cyan-400 hover:bg-cyan-400/20">
+                        <i class="fas fa-share text-sm"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function clearHistory() {
+            if (confirm('Clear all history?')) {
+                downloadHistory = [];
+                localStorage.removeItem('cyberDlHistory');
+                renderHistory();
+                showToast('History cleared');
+            }
+        }
+
+        function shareHistoryItem(url) {
+            if (navigator.share) {
+                navigator.share({ url });
+            } else {
+                navigator.clipboard.writeText(url);
+                showToast('Link copied!');
+            }
+        }
+
+        function shareMedia() {
+            if (!currentMedia) return;
+            
+            const shareData = {
+                title: currentMedia.title,
+                text: `Check out this video by ${currentMedia.author}`,
+                url: currentMedia.url
+            };
+            
+            if (navigator.share) {
+                navigator.share(shareData);
+            } else {
+                navigator.clipboard.writeText(currentMedia.url);
+                showToast('Link copied to clipboard!');
+            }
+        }
+
+        // UI Helpers
+        function clearInput() {
+            document.getElementById('urlInput').value = '';
+            document.getElementById('platformBadge').classList.add('hidden');
+            document.getElementById('previewSection').classList.add('hidden');
+        }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            const text = document.getElementById('toastMsg');
+            
+            text.textContent = msg;
+            
+            if (type === 'error') {
+                icon.className = 'fas fa-exclamation-circle text-red-400';
+                toast.classList.remove('border-cyan-400/50');
+                toast.classList.add('border-red-400/50');
+            } else {
+                icon.className = 'fas fa-check-circle text-cyan-400';
+                toast.classList.remove('border-red-400/50');
+                toast.classList.add('border-cyan-400/50');
+            }
+            
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function showTab(tab) {
+            // Simple tab switching logic
+            if (tab === 'batch') {
+                document.getElementById('batchSection').scrollIntoView({ behavior: 'smooth' });
+            } else if (tab === 'history') {
+                document.getElementById('historySection').scrollIntoView({ behavior: 'smooth' });
+            } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function showSettings() {
+            showToast('Settings coming soon!');
+        }
+
+        function toggleTheme() {
+            showToast('Theme switch coming soon!');
+        }
+
+        // Swipe Gestures
+        function setupSwipeGestures() {
+            const card = document.getElementById('previewCard');
+            if (!card) return;
+            
+            let startX = 0;
+            let currentX = 0;
+            
+            card.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+            });
+            
+            card.addEventListener('touchmove', (e) => {
+                currentX = e.touches[0].clientX;
+                const diff = currentX - startX;
+                card.style.transform = `translateX(${diff}px) rotate(${diff * 0.05}deg)`;
+            });
+            
+            card.addEventListener('touchend', (e) => {
+                const diff = currentX - startX;
+                if (Math.abs(diff) > 100) {
+                    card.classList.add(diff > 0 ? 'swiping-right' : 'swiping-left');
+                    setTimeout(() => {
+                        card.classList.remove('swiping-left', 'swiping-right');
+                        card.style.transform = '';
+                        document.getElementById('previewSection').classList.add('hidden');
+                    }, 300);
+                } else {
+                    card.style.transform = '';
+                }
+            });
+        }
+
+        // Particle Background
+        function initParticles() {
+            const canvas = document.getElementById('particles');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const particles = [];
+            const particleCount = 25;
+            
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    size: Math.random() * 2
+                });
+            }
+            
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    
+                    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                    
+                    ctx.fillStyle = 'rgba(0, 243, 255, 0.3)';
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+            
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        }
+    </script>
+</body>
+</html>
